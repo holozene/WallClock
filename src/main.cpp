@@ -27,10 +27,11 @@ AsyncWebServer server(80);
 
 Timezone Pacific;
 
-Adafruit_NeoPixel strip(512, 22, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(512, 13, NEO_GRB + NEO_KHZ800);
 
 // webpage vars
-String text = "test";
+String text = "I'm an esp32dev running PlatformIO, AsyncTCP, ESPAsyncWebServer, and AsyncElegantOTA on port 80, firmware raws can be uploaded to me over the air\n"
+              "I have an Adafruit NeoPixel strip (GRB 800KHZ) connected to pin 22 which is 8 pixels tall and 64 pixels across, 512 pixels total, the strip snakes from top to bottom on even columns then bottom to top on odd columns";
 
 // wifi vars
 const char *ssid = "Dibuni";
@@ -39,6 +40,8 @@ const char *password = "Rainhawk";
 // clock vars
 short wakeHour = 11;
 short stripClockOffset = 24 - wakeHour;
+
+const uint32_t w = strip.Color(0, 1, 0);
 
 // pixel vars
 const bool nums[10][15] = {
@@ -135,41 +138,41 @@ const bool days[8][30] = {
      0, 0, 1, 1, 0, 1,
      1, 1, 1, 1, 1, 1}};
 
-const uint32_t minuteColors[15] = {
-    strip.Color(255, 12 , 0  ), // 0 red
-    strip.Color(237, 36 , 0  ), // 1 
-    strip.Color(219, 73 , 0  ), // 2 
-    strip.Color(200, 109, 0  ), // 3 
-    strip.Color(164, 146, 0  ), // 4 
-    strip.Color(109, 182, 0  ), // 5 
-    strip.Color(55 , 200, 0  ), // 6 green
-    strip.Color(36 , 219, 0  ), // 7 
-    strip.Color(18 , 255, 36 ), // 8 
-    strip.Color(36 , 219, 73 ), // 9 
-    strip.Color(55 , 164, 128), // 10
-    strip.Color(73 , 109, 200), // 11
-    strip.Color(91 , 73 , 255), // 12
-    strip.Color(109, 36 , 191), // 13
-    strip.Color(128, 12 , 128)  // 14
-};
+const bool pwnme[161] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0,
+    1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
+    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0,
+    1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-/* alternate 
-    strip.Color(26 , 0  , 0  ), // 0
-    strip.Color(77 , 26 , 0  ), // 1
-    strip.Color(128, 51 , 0  ), // 2
-    strip.Color(166, 64 , 0  ), // 3
-    strip.Color(255, 153, 0  ), // 4
-    strip.Color(230, 230, 0  ), // 5
-    strip.Color(128, 255, 0  ), // 6
-    strip.Color(51 , 230, 13 ), // 7
-    strip.Color(13 , 128, 26 ), // 8
-    strip.Color(0  , 89 , 51 ), // 9
-    strip.Color(0  , 64 , 64 ), // 10
-    strip.Color(26 , 51 , 77 ), // 11
-    strip.Color(51 , 26 , 128), // 12
-    strip.Color(77 , 0  , 204), // 13
-    strip.Color(77 , 0  , 255)  // 14
-*/
+const bool pwn[91] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
+    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+    1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+const uint32_t minuteColors[15] = {
+    strip.Color(255, 12, 0),   // 0 red
+    strip.Color(237, 36, 0),   // 1
+    strip.Color(219, 73, 0),   // 2
+    strip.Color(200, 109, 0),  // 3
+    strip.Color(164, 146, 0),  // 4
+    strip.Color(109, 182, 0),  // 5
+    strip.Color(55, 200, 0),   // 6 green
+    strip.Color(36, 219, 0),   // 7
+    strip.Color(18, 255, 36),  // 8
+    strip.Color(36, 219, 73),  // 9
+    strip.Color(55, 164, 128), // 10
+    strip.Color(73, 109, 200), // 11
+    strip.Color(91, 73, 255),  // 12
+    strip.Color(109, 36, 191), // 13
+    strip.Color(128, 12, 128)  // 14
+};
 
 int xyToIndex(short x, short y)
 {
@@ -202,6 +205,32 @@ void showDay(int startX, int startY, uint32_t color)
   strip.show();
 }
 
+void showPwnMe(int startX, int startY, uint32_t color)
+{
+  for (int y = 0; y < 7; y++)
+    for (int x = 0; x < 23; x++)
+    {
+      if (pwnme[x + y * 23])
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), color);
+      else
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), strip.Color(0, 0, 0));
+    }
+  strip.show();
+}
+
+void showPwn(int startX, int startY, uint32_t color)
+{
+  for (int y = 0; y < 7; y++)
+    for (int x = 0; x < 13; x++)
+    {
+      if (pwn[x + y * 13])
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), color);
+      else
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), strip.Color(0, 0, 0));
+    }
+  strip.show();
+}
+
 void leftClock(uint32_t clockColor)
 {
   if (Pacific.hour() >= 10)
@@ -217,34 +246,37 @@ void leftClock(uint32_t clockColor)
   showDigit(Pacific.minute() % 10, 14, 0, clockColor);
 }
 
-void bottomBar(int startX, int endX, uint32_t barColor, uint32_t endColor)
-{
-  for (int x = startX; x < endX - 1; x++)
-  {
-    strip.setPixelColor(xyToIndex(x, 7), barColor);
-  }
-  strip.setPixelColor(xyToIndex(endX, 7), endColor);
-}
+// void bottomBar(int startX, int endX, uint32_t barColor, uint32_t endColor)
+// {
+//   for (int x = startX; x < endX - 1; x++)
+//   {
+//     strip.setPixelColor(xyToIndex(x, 7), barColor);
+//   }
+//   strip.setPixelColor(xyToIndex(endX, 7), endColor);
+// }
 
-int timeToX()
-{
-  return (Pacific.hour() + stripClockOffset) % 24 * 4 + Pacific.minute() / 15;
-}
+// int timeToX()
+// {
+//   return (Pacific.hour() + stripClockOffset) % 24 * 4 + Pacific.minute() / 15;
+// }
 
-void chaserClock()
-{
-  strip.setPixelColor(xyToIndex(max(timeToX() - 1, 0), 7), strip.Color(0, 0, 0));
-  strip.setPixelColor(xyToIndex(timeToX(), 7), minuteColors[Pacific.minute() % 15]);
-}
+// void chaserClock()
+// {
+//   strip.setPixelColor(xyToIndex(max(timeToX() - 1, 0), 7), strip.Color(0, 0, 0));
+//   strip.setPixelColor(xyToIndex(timeToX(), 7), minuteColors[Pacific.minute() % 15]);
+// }
 
 void setup(void)
 {
   strip.begin();
+  strip.clear();
   strip.show();
-  strip.setBrightness(50);
+  strip.setBrightness(10);
 
   Serial.begin(115200);
-  WiFi.mode(WIFI_STA);
+  // WiFi.mode(WIFI_MODE_STA);
+  // WiFi.setAutoConnect(true);
+  // WiFi.scanNetworks();
   WiFi.begin(ssid, password);
   Serial.println("");
 
@@ -256,7 +288,7 @@ void setup(void)
   }
   Serial.println("");
   Serial.print("Connected to ");
-  Serial.println(ssid);
+  Serial.println();
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -272,26 +304,44 @@ void setup(void)
   Pacific.setDefault();
   Serial.print("Time and Date: ");
   Serial.println(Pacific.dateTime("l, d-M-y H:i:s.v T"));
+
+  strip.setPixelColor(0, w);
+  strip.show();
+}
+
+IPAddress store;
+// use after setup only
+void showIP(int startX)
+{
+  if (WiFi.localIP() == store)
+    return;
+
+  store = WiFi.localIP();
+  int x = startX;
+  for (char c : WiFi.localIP().toString())
+  {
+    if (c == '.')
+    {
+      strip.setPixelColor(xyToIndex(x + 2, 5), w);
+      x += 3;
+    }
+    else
+    {
+      showDigit(c - '0', x, 0, w);
+      x += 5;
+    }
+  }
+  strip.show();
 }
 
 void loop(void)
 {
-  // text =
-  if (Pacific.hour() < wakeHour && Pacific.hour() > (wakeHour - 9) % 24)
-  {
-    strip.fill(0);
-    strip.show();
-    delay(10000);
-  }
-  else
-  {
-    leftClock(minuteColors[14]);
-    showDay(20, 0, minuteColors[14]);
-    // test color Pallette
-    // for (int x = 0; x < 15; x++)
-    //   strip.setPixelColor(xyToIndex(31 + x, 4), minuteColors[x]);
-    chaserClock();
-    strip.show();
-    delay(333);
-  }
+  strip.setPixelColor(0, w);
+  strip.show();
+
+  // showPwn(0, 1, w);
+
+  showIP(0);
+
+  delay(1000);
 }
