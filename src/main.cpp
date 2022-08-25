@@ -27,7 +27,7 @@ AsyncWebServer server(80);
 
 Timezone Pacific;
 
-Adafruit_NeoPixel strip(512, 22, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(512, 13, NEO_GRB + NEO_KHZ800);
 
 // webpage vars
 String text = "test";
