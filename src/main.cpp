@@ -29,16 +29,92 @@ Timezone Pacific;
 
 Adafruit_NeoPixel strip(512, 13, NEO_GRB + NEO_KHZ800);
 
-// webpage vars
-String text = "test";
+// clock vars
+short wakeHour = 11;
+short stripClockOffset = 24 - wakeHour;
 
 // wifi vars
 const char *ssid = "Dibuni";
 const char *password = "Rainhawk";
 
-// clock vars
-short wakeHour = 11;
-short stripClockOffset = 24 - wakeHour;
+// webpage vars
+String text = "test";
+
+const char *PARAM_INPUT_1 = "output";
+const char *PARAM_INPUT_2 = "state";
+
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <title>Wall Clock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <style>
+    html {font-family: Arial; display: inline-block; text-align: center;}
+    h2 {font-size: 3.0rem;}
+    p {font-size: 3.0rem;}
+    body {max-width: 1280px; margin:0px auto; padding-bottom: 25px;}
+    .time {position: relative; display: inline-block; width: 79px; height: 20px; text-align: left; text-indent: 3px; border-right: solid black 1px;}
+    .switch {position: relative; display: inline-block; width: 20px; height: 20px} 
+    .switch input {display: none}
+    .slider {background-color: #ccc; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 6px}
+    input:checked+.slider {background-color: #b30000}
+  </style>
+</head>
+<body>
+  <h2>Enter Schedule For Today:</h2>
+  %BUTTONPLACEHOLDER%
+<script>function toggleCheckbox(element) {
+  var xhr = new XMLHttpRequest();
+  if(element.checked){ xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
+  else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
+  xhr.send();
+}
+</script>
+</body>
+</html>
+)rawliteral";
+
+// 0=nothing, any other value is a different type of event so it can be represented with a color
+bool schedule[64];
+
+String outputState(int output)
+{
+  if (schedule[output] == 0)
+  {
+    return "";
+  }
+  else
+  {
+    return "checked";
+  }
+}
+
+String id(int i)
+{
+  return String(i);
+}
+
+// Replaces placeholder with button section in your web page
+String processor(const String &var)
+{
+  // Serial.println(var);
+  if (var == "BUTTONPLACEHOLDER")
+  {
+    String buttons = "";
+    for (int i = 0; i < 16; i++)
+    {
+      buttons += "<div class=\"time\">" + id((i + wakeHour)%12) + ":00</div>";
+    }
+    buttons += "<div></div>";
+    for (int i = 0; i < 64; i++)
+    {
+      buttons += "<label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + id(i) + "\" " + outputState(i) + "><span class=\"slider\"></span></label>";
+    }
+    return buttons;
+  }
+  return String();
+}
 
 // pixel vars
 const bool nums[10][15] = {
@@ -136,24 +212,24 @@ const bool days[8][30] = {
      1, 1, 1, 1, 1, 1}};
 
 const uint32_t minuteColors[15] = {
-    strip.Color(255, 12 , 0  ), // 0 red
-    strip.Color(237, 36 , 0  ), // 1 
-    strip.Color(219, 73 , 0  ), // 2 
-    strip.Color(200, 109, 0  ), // 3 
-    strip.Color(164, 146, 0  ), // 4 
-    strip.Color(109, 182, 0  ), // 5 
-    strip.Color(55 , 200, 0  ), // 6 green
-    strip.Color(36 , 219, 0  ), // 7 
-    strip.Color(18 , 255, 36 ), // 8 
-    strip.Color(36 , 219, 73 ), // 9 
-    strip.Color(55 , 164, 128), // 10
-    strip.Color(73 , 109, 200), // 11
-    strip.Color(91 , 73 , 255), // 12
-    strip.Color(109, 36 , 191), // 13
-    strip.Color(128, 12 , 128)  // 14
+    strip.Color(255, 12, 0),   // 0 red
+    strip.Color(237, 36, 0),   // 1
+    strip.Color(219, 73, 0),   // 2
+    strip.Color(200, 109, 0),  // 3
+    strip.Color(164, 146, 0),  // 4
+    strip.Color(109, 182, 0),  // 5
+    strip.Color(55, 200, 0),   // 6 green
+    strip.Color(36, 219, 0),   // 7
+    strip.Color(18, 255, 36),  // 8
+    strip.Color(36, 219, 73),  // 9
+    strip.Color(55, 164, 128), // 10
+    strip.Color(73, 109, 200), // 11
+    strip.Color(91, 73, 255),  // 12
+    strip.Color(109, 36, 191), // 13
+    strip.Color(128, 12, 128)  // 14
 };
 
-/* alternate 
+/* alternate
     strip.Color(26 , 0  , 0  ), // 0
     strip.Color(77 , 26 , 0  ), // 1
     strip.Color(128, 51 , 0  ), // 2
@@ -186,6 +262,31 @@ void showDigit(short digit, int startX, int startY, uint32_t color)
       else
         strip.setPixelColor(xyToIndex(startX + x, startY + y), strip.Color(0, 0, 0));
     }
+  strip.show();
+}
+
+IPAddress store;
+// use after setup only
+void showIP(int startX)
+{
+  if (WiFi.localIP() == store)
+    return;
+
+  store = WiFi.localIP();
+  int x = startX;
+  for (char c : WiFi.localIP().toString())
+  {
+    if (c == '.')
+    {
+      strip.setPixelColor(xyToIndex(x, 5), minuteColors[14]);
+      x += 2;
+    }
+    else
+    {
+      showDigit(c - '0', x, 1, minuteColors[14]);
+      x += 4;
+    }
+  }
   strip.show();
 }
 
@@ -231,6 +332,17 @@ int timeToX()
   return (Pacific.hour() + stripClockOffset) % 24 * 4 + Pacific.minute() / 15;
 }
 
+void setSchedule()
+{
+  for (int i = 0; i < 64; i++)
+  {
+    if (schedule[i])
+      strip.setPixelColor(xyToIndex(i, 6), strip.Color(12, 12, 12));
+    else
+      strip.setPixelColor(xyToIndex(i, 6), strip.Color(0, 0, 0));
+  }
+}
+
 void chaserClock()
 {
   strip.setPixelColor(xyToIndex(max(timeToX() - 1, 0), 7), strip.Color(0, 0, 0));
@@ -260,8 +372,30 @@ void setup(void)
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", text); });
+            { request->send_P(200, "text/html", index_html, processor); });
+
+  // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+  server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    String inputMessage1;
+    String inputMessage2;
+    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
+      inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
+      inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
+      schedule[inputMessage1.toInt()] = inputMessage2.toInt() == 0 ? false : true;
+    }
+    else {
+      inputMessage1 = "No message sent";
+      inputMessage2 = "No message sent";
+    }
+    Serial.print("id: ");
+    Serial.print(inputMessage1);
+    Serial.print(" - Set to: ");
+    Serial.println(inputMessage2);
+    request->send(200, "text/plain", "OK"); });
 
   AsyncElegantOTA.begin(&server); // Start AsyncElegantOTA
   server.begin();
@@ -285,11 +419,13 @@ void loop(void)
   }
   else
   {
-    leftClock(minuteColors[14]);
-    showDay(20, 0, minuteColors[14]);
+    leftClock(strip.Color(6, 6, 6));
+    showDay(20, 0, strip.Color(6, 6, 6));
+    // showIP(1);
     // test color Pallette
     // for (int x = 0; x < 15; x++)
     //   strip.setPixelColor(xyToIndex(31 + x, 4), minuteColors[x]);
+    setSchedule();
     chaserClock();
     strip.show();
     delay(333);
