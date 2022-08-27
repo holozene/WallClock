@@ -93,14 +93,10 @@ String processor(const String &var)
   {
     String buttons = "";
     for (int i = 0; i < 16; i++)
-    {
       buttons += "<div class=\"time\">" + toString((i + wakeHour) % 12) + ":00</div>";
-    }
     buttons += "<div></div>";
     for (int i = 0; i < 64; i++)
-    {
       buttons += "<label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + toString(i) + "\" " + scheduleState(i) + "><span class=\"slider\"></span></label>";
-    }
     return buttons;
   }
   return String();
@@ -195,11 +191,11 @@ const bool days[8][30] = {
      1, 1, 0, 1, 1, 1,
      1, 0, 0, 1, 0, 0,
      1, 0, 0, 1, 0, 0},
-    {1, 1, 1, 0, 0, 0, // Sa
-     1, 0, 0, 0, 0, 1,
+    {1, 1, 1, 0, 0, 0, // St
+     1, 0, 0, 0, 1, 0,
      1, 1, 1, 1, 1, 1,
-     0, 0, 1, 1, 0, 1,
-     1, 1, 1, 1, 1, 1}};
+     0, 0, 1, 0, 1, 0,
+     1, 1, 1, 0, 1, 1}};
 
 // color vars
 const uint32_t neutral = strip.Color(6, 6, 6);
@@ -305,7 +301,8 @@ void pixelClock()
 {
   showSchedule();
   int x = (Pacific.hour() + 24 - wakeHour) % 24 * 4 + Pacific.minute() / 15;
-  if (x > 0) strip.setPixelColor(xyToIndex(x - 1, 7), 0);
+  if (x > 0)
+    strip.setPixelColor(xyToIndex(x - 1, 7), 0);
   strip.setPixelColor(xyToIndex(x, 7), minuteColors[Pacific.minute() % 15]);
 }
 
@@ -400,7 +397,7 @@ void loop(void)
     strip.clear();
     strip.show();
     delay(10000);
-  } 
+  }
   // while awake, update the clock display every 1/3 of a second
   else
   {
