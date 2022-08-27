@@ -5,4 +5,4 @@
 extern const char *ssid;
 extern const char *password;
 
-#endif
+#endif /* SECRETS_H */

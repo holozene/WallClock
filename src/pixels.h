@@ -133,4 +133,10 @@ const uint32_t minuteColors[15] = {
     strip.Color(128, 12, 128)  // 14
 };
 
+int xyToIndex(short x, short y);
+
+void showDigit(short digit, int startX, int startY, uint32_t color);
+
+void showDay(short day, int startX, int startY, uint32_t color);
+
 #endif /* PIXELS_H */
