@@ -9,11 +9,14 @@
 
 #include <Adafruit_NeoPixel.h>
 
+AsyncWebServer server(80);
+
+Timezone Pacific;
+
 // x must be less than 64
 // y must be less than 8
 
 // c 0 1  2  3  4  5  6
-
 //   0 15 16 31 32 47 48
 //   1 14 17 30 33 46 49
 //   2 13 18 29 34 45 50
@@ -22,24 +25,18 @@
 //   5 10 21 26 37 42 53
 //   6 9  22 25 38 41 54
 //   7 8  23 24 39 40 55
-
-AsyncWebServer server(80);
-
-Timezone Pacific;
-
 Adafruit_NeoPixel strip(512, 13, NEO_GRB + NEO_KHZ800);
 
 // clock vars
 short wakeHour = 11;
-short stripClockOffset = 24 - wakeHour;
+// todo: make this a char or short so 0 is still nothing, but any other value is a different type of event so it can be represented with a color
+bool schedule[64];
 
 // wifi vars
 const char *ssid = "Dibuni";
 const char *password = "Rainhawk";
 
 // webpage vars
-String text = "test";
-
 const char *PARAM_INPUT_1 = "output";
 const char *PARAM_INPUT_2 = "state";
 
@@ -75,27 +72,20 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-// 0=nothing, any other value is a different type of event so it can be represented with a color
-bool schedule[64];
-
-String outputState(int output)
+String scheduleState(int output)
 {
   if (schedule[output] == 0)
-  {
     return "";
-  }
   else
-  {
     return "checked";
-  }
 }
 
-String id(int i)
+String toString(int i)
 {
   return String(i);
 }
 
-// Replaces placeholder with button section in your web page
+// Replaces placeholder with button section
 String processor(const String &var)
 {
   // Serial.println(var);
@@ -104,12 +94,12 @@ String processor(const String &var)
     String buttons = "";
     for (int i = 0; i < 16; i++)
     {
-      buttons += "<div class=\"time\">" + id((i + wakeHour)%12) + ":00</div>";
+      buttons += "<div class=\"time\">" + toString((i + wakeHour) % 12) + ":00</div>";
     }
     buttons += "<div></div>";
     for (int i = 0; i < 64; i++)
     {
-      buttons += "<label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + id(i) + "\" " + outputState(i) + "><span class=\"slider\"></span></label>";
+      buttons += "<label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + toString(i) + "\" " + scheduleState(i) + "><span class=\"slider\"></span></label>";
     }
     return buttons;
   }
@@ -118,52 +108,52 @@ String processor(const String &var)
 
 // pixel vars
 const bool nums[10][15] = {
-    {1, 1, 1,
+    {1, 1, 1, // 0
      1, 0, 1,
      1, 0, 1,
      1, 0, 1,
      1, 1, 1},
-    {0, 1, 0,
+    {0, 1, 0, // 1
      1, 1, 0,
      0, 1, 0,
      0, 1, 0,
-     0, 1, 0},
-    {1, 1, 1,
+     1, 1, 1},
+    {1, 1, 1, // 2
      0, 0, 1,
      1, 1, 1,
      1, 0, 0,
      1, 1, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 3
      0, 0, 1,
      1, 1, 1,
      0, 0, 1,
      1, 1, 1},
-    {1, 0, 1,
+    {1, 0, 1, // 4
      1, 0, 1,
      1, 1, 1,
      0, 0, 1,
      0, 0, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 5
      1, 0, 0,
      1, 1, 1,
      0, 0, 1,
      1, 1, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 6
      1, 0, 0,
      1, 1, 1,
      1, 0, 1,
      1, 1, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 7
      0, 0, 1,
      0, 0, 1,
      0, 0, 1,
      0, 0, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 8
      1, 0, 1,
      1, 1, 1,
      1, 0, 1,
      1, 1, 1},
-    {1, 1, 1,
+    {1, 1, 1, // 9
      1, 0, 1,
      1, 1, 1,
      0, 0, 1,
@@ -211,6 +201,9 @@ const bool days[8][30] = {
      0, 0, 1, 1, 0, 1,
      1, 1, 1, 1, 1, 1}};
 
+// color vars
+const uint32_t neutral = strip.Color(6, 6, 6);
+
 const uint32_t minuteColors[15] = {
     strip.Color(255, 12, 0),   // 0 red
     strip.Color(237, 36, 0),   // 1
@@ -229,24 +222,6 @@ const uint32_t minuteColors[15] = {
     strip.Color(128, 12, 128)  // 14
 };
 
-/* alternate
-    strip.Color(26 , 0  , 0  ), // 0
-    strip.Color(77 , 26 , 0  ), // 1
-    strip.Color(128, 51 , 0  ), // 2
-    strip.Color(166, 64 , 0  ), // 3
-    strip.Color(255, 153, 0  ), // 4
-    strip.Color(230, 230, 0  ), // 5
-    strip.Color(128, 255, 0  ), // 6
-    strip.Color(51 , 230, 13 ), // 7
-    strip.Color(13 , 128, 26 ), // 8
-    strip.Color(0  , 89 , 51 ), // 9
-    strip.Color(0  , 64 , 64 ), // 10
-    strip.Color(26 , 51 , 77 ), // 11
-    strip.Color(51 , 26 , 128), // 12
-    strip.Color(77 , 0  , 204), // 13
-    strip.Color(77 , 0  , 255)  // 14
-*/
-
 int xyToIndex(short x, short y)
 {
   return x * 8 + ((x % 2 == 1) ? 7 - y : y);
@@ -260,14 +235,42 @@ void showDigit(short digit, int startX, int startY, uint32_t color)
       if (nums[digit][x + y * 3])
         strip.setPixelColor(xyToIndex(startX + x, startY + y), color);
       else
-        strip.setPixelColor(xyToIndex(startX + x, startY + y), strip.Color(0, 0, 0));
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), 0);
     }
   strip.show();
 }
 
+void showDay(int startX, int startY, uint32_t color)
+{
+  for (int y = 0; y < 5; y++)
+    for (int x = 0; x < 6; x++)
+    {
+      if (days[Pacific.weekday()][x + y * 6])
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), color);
+      else
+        strip.setPixelColor(xyToIndex(startX + x, startY + y), 0);
+    }
+}
+
+void showSchedule()
+{
+  for (int i = 0; i < 64; i++)
+  {
+    switch (schedule[i])
+    {
+    case 1:
+      strip.setPixelColor(xyToIndex(i, 6), neutral);
+      break;
+    default:
+      strip.setPixelColor(xyToIndex(i, 6), 0);
+      break;
+    }
+  }
+}
+
 IPAddress store;
-// use after setup only
-void showIP(int startX)
+// use only after WiFi has been setup
+void IP(int startX)
 {
   if (WiFi.localIP() == store)
     return;
@@ -287,80 +290,56 @@ void showIP(int startX)
       x += 4;
     }
   }
-  strip.show();
 }
 
-void showDay(int startX, int startY, uint32_t color)
+void barClock()
 {
-  for (int y = 0; y < 5; y++)
-    for (int x = 0; x < 6; x++)
-    {
-      if (days[Pacific.weekday()][x + y * 6])
-        strip.setPixelColor(xyToIndex(startX + x, startY + y), color);
-      else
-        strip.setPixelColor(xyToIndex(startX + x, startY + y), strip.Color(0, 0, 0));
-    }
-  strip.show();
+  showSchedule();
+  int endX = (Pacific.hour() + 24 - wakeHour) % 24 * 4 + Pacific.minute() / 15;
+  for (int x = 0; x < endX - 1; x++)
+    strip.setPixelColor(xyToIndex(x, 7), neutral);
+  strip.setPixelColor(xyToIndex(endX, 7), minuteColors[Pacific.minute() % 15]);
 }
 
-void leftClock(uint32_t clockColor)
+void pixelClock()
+{
+  showSchedule();
+  int x = (Pacific.hour() + 24 - wakeHour) % 24 * 4 + Pacific.minute() / 15;
+  if (x > 0) strip.setPixelColor(xyToIndex(x - 1, 7), 0);
+  strip.setPixelColor(xyToIndex(x, 7), minuteColors[Pacific.minute() % 15]);
+}
+
+void digitClock()
 {
   if (Pacific.hour() >= 10)
-    showDigit(Pacific.hour() / 10, 0, 0, clockColor);
+    showDigit(Pacific.hour() / 10, 0, 0, neutral);
   else
     for (int y = 0; y < 5; y++)
       for (int x = 0; x < 3; x++)
-        strip.setPixelColor(xyToIndex(x, y), strip.Color(0, 0, 0));
-  showDigit(Pacific.hour() % 10, 4, 0, clockColor);
-  strip.setPixelColor(65, clockColor);
-  strip.setPixelColor(67, clockColor);
-  showDigit(Pacific.minute() / 10, 10, 0, clockColor);
-  showDigit(Pacific.minute() % 10, 14, 0, clockColor);
-}
-
-void bottomBar(int startX, int endX, uint32_t barColor, uint32_t endColor)
-{
-  for (int x = startX; x < endX - 1; x++)
-  {
-    strip.setPixelColor(xyToIndex(x, 7), barColor);
-  }
-  strip.setPixelColor(xyToIndex(endX, 7), endColor);
-}
-
-int timeToX()
-{
-  return (Pacific.hour() + stripClockOffset) % 24 * 4 + Pacific.minute() / 15;
-}
-
-void setSchedule()
-{
-  for (int i = 0; i < 64; i++)
-  {
-    if (schedule[i])
-      strip.setPixelColor(xyToIndex(i, 6), strip.Color(12, 12, 12));
-    else
-      strip.setPixelColor(xyToIndex(i, 6), strip.Color(0, 0, 0));
-  }
-}
-
-void chaserClock()
-{
-  strip.setPixelColor(xyToIndex(max(timeToX() - 1, 0), 7), strip.Color(0, 0, 0));
-  strip.setPixelColor(xyToIndex(timeToX(), 7), minuteColors[Pacific.minute() % 15]);
+        strip.setPixelColor(xyToIndex(x, y), 0);
+  showDigit(Pacific.hour() % 10, 4, 0, neutral);
+  strip.setPixelColor(65, neutral);
+  strip.setPixelColor(67, neutral);
+  showDigit(Pacific.minute() / 10, 10, 0, neutral);
+  showDigit(Pacific.minute() % 10, 14, 0, neutral);
+  showDay(20, 0, neutral);
 }
 
 void setup(void)
 {
+  // Start Strip
   strip.begin();
+  strip.clear();
   strip.show();
   strip.setBrightness(50);
 
+  // Start Serial
   Serial.begin(115200);
+
+  // Start WiFi
+  Serial.println("Starting WiFi");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.println("");
-
-  // Wait for connection
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
@@ -372,6 +351,10 @@ void setup(void)
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  // Start AsyncElegantOTA
+  AsyncElegantOTA.begin(&server);
+
+  // Setup Server
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html, processor); });
@@ -397,10 +380,11 @@ void setup(void)
     Serial.println(inputMessage2);
     request->send(200, "text/plain", "OK"); });
 
-  AsyncElegantOTA.begin(&server); // Start AsyncElegantOTA
+  // Start Server
   server.begin();
   Serial.println("HTTP server started");
 
+  // Setup ezTime
   waitForSync();
   Pacific.setLocation("America/Los_Angeles");
   Pacific.setDefault();
@@ -410,23 +394,18 @@ void setup(void)
 
 void loop(void)
 {
-  // text =
+  // from 9 hours until wakeHour to wakeHour, turn off the clock
   if (Pacific.hour() < wakeHour && Pacific.hour() > (wakeHour - 9) % 24)
   {
-    strip.fill(0);
+    strip.clear();
     strip.show();
     delay(10000);
-  }
+  } 
+  // while awake, update the clock display every 1/3 of a second
   else
   {
-    leftClock(strip.Color(6, 6, 6));
-    showDay(20, 0, strip.Color(6, 6, 6));
-    // showIP(1);
-    // test color Pallette
-    // for (int x = 0; x < 15; x++)
-    //   strip.setPixelColor(xyToIndex(31 + x, 4), minuteColors[x]);
-    setSchedule();
-    chaserClock();
+    digitClock();
+    pixelClock();
     strip.show();
     delay(333);
   }
