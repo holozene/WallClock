@@ -7,7 +7,7 @@ AsyncWebServer server(80);
 // config vars
 short wakeHour = 9;
 // todo: make this a char or short so 0 is still nothing, but any other value is a different type of event so it can be represented with a color
-bool schedule[64] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+bool schedule[64];
 
 // webpage vars
 const char *PARAM_INPUT_1 = "output";

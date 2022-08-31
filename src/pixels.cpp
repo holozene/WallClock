@@ -17,7 +17,6 @@ void showDigit(short digit, int startX, int startY, uint32_t color)
       else
         strip.setPixelColor(xyToIndex(startX + x, startY + y), 0);
     }
-  strip.show();
 }
 
 void showDay(short day, int startX, int startY, uint32_t color)
@@ -30,4 +29,10 @@ void showDay(short day, int startX, int startY, uint32_t color)
       else
         strip.setPixelColor(xyToIndex(startX + x, startY + y), 0);
     }
+}
+
+void testColors() {
+    // test color Pallette
+    for (int x = 0; x < 15; x++)
+      strip.setPixelColor(xyToIndex(31 + x, 4), minuteColors[x]);
 }
