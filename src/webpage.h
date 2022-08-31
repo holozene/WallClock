@@ -40,8 +40,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 <script>
 function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
-  if(element.checked) { xhr.open("GET", "/change?output="+element.id+"&state=1", true); }
-  else { xhr.open("GET", "/change?output="+element.id+"&state=0", true); }
+  xhr.open("GET", "/change?output="+element.id+"&state="+(+element.checked), true);
   xhr.send();
 }
 function wakeHour(element) {
