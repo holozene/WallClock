@@ -1,12 +1,13 @@
 #include "webpage.h"
+#include "pixels.h"
 #include "secrets.h"
 
 AsyncWebServer server(80);
 
 // config vars
-short wakeHour = 11;
+short wakeHour = 9;
 // todo: make this a char or short so 0 is still nothing, but any other value is a different type of event so it can be represented with a color
-bool schedule[64];
+bool schedule[64] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // webpage vars
 const char *PARAM_INPUT_1 = "output";
@@ -28,12 +29,11 @@ String scheduleState(int output)
 // Replaces placeholder with button section
 String processor(const String &var)
 {
-
+  Serial.println(var);
   if (var == "HOURPLACEHOLDER")
   {
-    return "<input id=\"wakeHour\" class=\"\" onchange=\"toggleCheckbox(this)\" type=\"number\" max=\"24\" min=\"1\" value=\"" + toString(wakeHour) + "\">";
+    return "<input id=\"wakeHour\" type=\"number\" onchange=\"wakeHour(this)\" min=\"1\" max=\"24\" value=\"" + toString(wakeHour) + "\">";
   }
-  // Serial.println(var);
   if (var == "BUTTONPLACEHOLDER")
   {
     String buttons = "";
@@ -41,7 +41,7 @@ String processor(const String &var)
       buttons += "<div class=\"time\">" + toString((i + wakeHour) % 12) + ":00</div>";
     buttons += "<div></div>";
     for (int i = 0; i < 64; i++)
-      buttons += "<label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + toString(i) + "\" " + scheduleState(i) + "><span class=\"slider\"></span></label>";
+      buttons += "<label class=\"switch\"><input id=\"" + toString(i) + "\" type=\"checkbox\" onchange=\"toggleCheckbox(this)\" " + scheduleState(i) + "><span class=\"slider\"></span></label>";
     return buttons;
   }
   return String();
@@ -78,6 +78,9 @@ void startServer()
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
       inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
+      if (inputMessage1.equals("wakeHour")) 
+        wakeHour = inputMessage2.toInt();
+      else 
       schedule[inputMessage1.toInt()] = inputMessage2.toInt() == 0 ? false : true;
     }
     else {

@@ -22,9 +22,8 @@ const char index_html[] PROGMEM = R"rawliteral(
   <style>
     html {font-family: Arial; display: inline-block; text-align: center;}
     input {width: 50px}
-    h2 {font-size: 3.0rem;}
     p {font-size: 3.0rem;}
-    body {max-width: 1280px; margin:0px auto; padding-bottom: 25px;}
+    body {max-width: 1280px; margin: 0px auto; padding-bottom: 25px;}
     .time {position: relative; display: inline-block; width: 79px; height: 20px; text-align: left; text-indent: 3px; border-right: solid black 1px;}
     .switch {position: relative; display: inline-block; width: 20px; height: 20px} 
     .switch input {display: none}
@@ -34,19 +33,20 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div style="height: 20px;"></div>
-  <h>Enter Wake Hour: </h>
+  <h>Wake Hour: </h>
   %HOURPLACEHOLDER%
-  <h2>Enter Schedule For Today:</h2>
+  <h1>Schedule For Today:</h1>
   %BUTTONPLACEHOLDER%
-<script>function toggleCheckbox(element) {
+<script>
+function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
-  if(element.checked){ xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
+  if(element.checked) { xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
   else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
   xhr.send();
-  function wakeHour(element) {
+}
+function wakeHour(element) {
   var xhr = new XMLHttpRequest();
-  if(element.checked){ xhr.open("GET", "/update?output=wakeHour&state="+, true); }
-  else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
+  xhr.open("GET", "/update?output=wakeHour&state="+element.value, true);
   xhr.send();
 }
 </script>

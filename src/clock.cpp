@@ -80,4 +80,6 @@ void digitClock()
   showDigit(Pacific.minute() / 10, 10, 0, neutral);
   showDigit(Pacific.minute() % 10, 14, 0, neutral);
   showDay(Pacific.weekday(), 20, 0, neutral);
+
+//   showDigit(wakeHour%10, 40, 0, neutral);
 }
