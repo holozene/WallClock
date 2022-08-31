@@ -40,13 +40,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 <script>
 function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
-  if(element.checked) { xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
-  else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
+  if(element.checked) { xhr.open("GET", "/change?output="+element.id+"&state=1", true); }
+  else { xhr.open("GET", "/change?output="+element.id+"&state=0", true); }
   xhr.send();
 }
 function wakeHour(element) {
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "/update?output=wakeHour&state="+element.value, true);
+  xhr.open("GET", "/change?output=wakeHour&state="+element.value, true);
   xhr.send();
 }
 </script>

@@ -69,19 +69,21 @@ void startServer()
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send_P(200, "text/html", index_html, processor); });
 
-  // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
-  server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
+  // Send a GET request to <ESP_IP>/change?output=<inputMessage1>&state=<inputMessage2>
+  server.on("/change", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     String inputMessage1;
     String inputMessage2;
-    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    // GET input1 value on <ESP_IP>/change?output=<inputMessage1>&state=<inputMessage2>
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
       inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
-      if (inputMessage1.equals("wakeHour")) 
+      if (inputMessage1.equals("wakeHour")) {
+        for (int i = 0; i < 64; i++) strip.setPixelColor(xyToIndex(i, 7), 0);
         wakeHour = inputMessage2.toInt();
+      }
       else 
-      schedule[inputMessage1.toInt()] = inputMessage2.toInt() == 0 ? false : true;
+        schedule[inputMessage1.toInt()] = inputMessage2.toInt() == 0 ? false : true;
     }
     else {
       inputMessage1 = "No message sent";
