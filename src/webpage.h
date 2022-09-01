@@ -44,10 +44,10 @@ function toggleCheckbox(element) {
   xhr.send();
 }
 function wakeHour(element) {
-  window.location.reload(true);
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "/change?output=wakeHour&state="+element.value, true);
   xhr.send();
+  window.location.reload(true);
 }
 </script>
 </body>
