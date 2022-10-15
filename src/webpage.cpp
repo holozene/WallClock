@@ -50,7 +50,8 @@ String processor(const String &var)
 void startServer()
 {
   // Start WiFi
-  Serial.println("Starting WiFi");
+  Serial.print("Connecting to");
+  Serial.println(ssid);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
@@ -59,8 +60,7 @@ void startServer()
     Serial.print(".");
   }
   Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
+  Serial.print("Connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 

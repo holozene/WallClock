@@ -11,6 +11,7 @@ void setup(void)
   strip.clear();
   strip.show();
   strip.setBrightness(50);
+  strip.setPixelColor(8, minuteColors[0]);
 
   // Start Serial
   Serial.begin(115200);
@@ -30,19 +31,19 @@ void setup(void)
 
 void loop(void)
 {
-  // from 8 hours until wakeHour to wakeHour, turn off the clock
-  if (Pacific.hour() < wakeHour && Pacific.hour() > (wakeHour - 9) % 24)
-  {
-    strip.clear();
-    strip.show();
-    delay(10000);
-  }
   // while awake, update the clock display every 1/3 of a second
-  else
+  // if (Pacific.hour() > wakeHour && Pacific.hour() < (wakeHour - 9) % 24)
   {
     digitClock();
     pixelClock();
     strip.show();
     delay(333);
   }
+  // from 8 hours until wakeHour to wakeHour, turn off the clock
+  // else
+  // {
+  //   strip.clear();
+  //   strip.show();
+  //   delay(10000);
+  // }
 }
